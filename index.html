@@ -26,7 +26,10 @@
         <div class="header-left">
             <div class="logo">
                 <span class="logo-icon">✨</span>
-                <span class="logo-text">Resume<span class="logo-ai">AI</span> Pro</span>
+                <div class="logo-content">
+                    <span class="logo-text">Resume<span class="logo-ai">AI</span> Pro</span>
+                    <span class="logo-subtitle">created by shivang</span>
+                </div>
             </div>
         </div>
         <div class="header-center">
@@ -42,9 +45,7 @@
             <button class="btn-secondary" onclick="openTemplateGallery()">
                 <span>🎨</span> Templates
             </button>
-            <button class="btn-primary" onclick="downloadResume()">
-                <span>⬇️</span> Download PDF
-            </button>
+
         </div>
     </header>
 
@@ -201,6 +202,11 @@
                         <h3>Content Writer</h3>
                         <p>Copywriting, Editor, Blogger</p>
                     </div>
+                    <div class="job-card" data-profile="food-service" onclick="selectJobProfile('food-service')">
+                        <div class="job-icon">☕</div>
+                        <h3>Food Service</h3>
+                        <p>Barista, Crew, Server</p>
+                    </div>
                     <div class="job-card" data-profile="other" onclick="selectJobProfile('other')">
                         <div class="job-icon">📋</div>
                         <h3>Other</h3>
@@ -245,7 +251,9 @@
                     <div class="form-group">
                         <label>Job Title <span class="required">*</span></label>
                         <div class="input-with-ai">
-                            <input type="text" id="jobTitle" placeholder="Software Engineer" oninput="updateResume()">
+                            <input type="text" id="jobTitle" placeholder="Software Engineer"
+                                list="job-title-suggestions" oninput="updateResume()">
+                            <datalist id="job-title-suggestions"></datalist>
                         </div>
                     </div>
                     <div class="form-group">
@@ -413,6 +421,29 @@
                 </button>
             </div>
 
+            <!-- Section: Download Resume -->
+            <div class="form-section" id="section-download">
+                <div class="section-header">
+                    <div class="section-icon">📥</div>
+                    <div class="section-info">
+                        <h2>Download Your Resume</h2>
+                        <p>Congratulations! Your resume is ready to download</p>
+                    </div>
+                </div>
+
+                <div class="download-section">
+                    <div class="download-success-message">
+                        <div class="success-icon">🎉</div>
+                        <h3>Great Job!</h3>
+                        <p>You've completed all sections of your resume. Click the button below to download your
+                            professional resume as a PDF.</p>
+                    </div>
+                    <button class="btn-download-large" onclick="downloadResume()">
+                        <span>⬇️</span> Download PDF
+                    </button>
+                </div>
+            </div>
+
             <!-- Section Navigation -->
             <div class="section-navigation">
                 <button class="btn-nav prev" onclick="prevSection()" id="btn-prev">
@@ -443,6 +474,9 @@
                     <option value="creative">Creative</option>
                     <option value="ats">ATS-Friendly</option>
                     <option value="executive">Executive</option>
+                    <option value="elegant">Elegant</option>
+                    <option value="tech">Tech</option>
+                    <option value="classic">Classic</option>
                 </select>
             </div>
 
