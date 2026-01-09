@@ -11,6 +11,7 @@
 const JOB_PROFILES = {
     'software-engineer': {
         title: 'Software Engineer',
+        titles: ["Software Engineer", "Frontend Developer", "Backend Developer", "Full Stack Developer", "DevOps Engineer", "Mobile Developer", "QA Engineer", "System Architect"],
         summaries: [
             "Innovative Software Engineer with [X] years of experience in full-stack development. Proven track record of building scalable web applications and optimizing system performance. Skilled in JavaScript, React, and Node.js.",
             "Results-driven Developer passionate about writing clean, maintainable code. Experienced in Agile environments and CI/CD pipelines. Seeking to leverage technical skills to drive product success.",
@@ -26,6 +27,7 @@ const JOB_PROFILES = {
     },
     'data-analyst': {
         title: 'Data Analyst',
+        titles: ["Data Analyst", "Data Scientist", "Business Analyst", "Data Engineer", "BI Analyst", "Analytics Consultant", "Marketing Analyst"],
         summaries: [
             "Detail-oriented Data Analyst with expertise in interpreting complex datasets to drive business decisions. Proficient in SQL, Python, and Tableau. Strong analytical and problem-solving skills.",
             "Data professional with a passion for uncovering trends and insights. Experienced in creating automated dashboards and reporting systems. Proven ability to communicate technical findings to non-technical stakeholders."
@@ -40,6 +42,7 @@ const JOB_PROFILES = {
     },
     'product-manager': {
         title: 'Product Manager',
+        titles: ["Product Manager", "Associate Product Manager", "Senior Product Manager", "Product Owner", "Technical Product Manager", "Group Product Manager"],
         summaries: [
             "Strategic Product Manager with [X] years of experience leading cross-functional teams to deliver user-centric products. Skilled in roadmap planning, market research, and agile methodologies.",
             "Customer-obsessed Product Owner with a track record of increasing user engagement and retention. Experienced in defining product vision and executing go-to-market strategies."
@@ -54,6 +57,7 @@ const JOB_PROFILES = {
     },
     'marketing': {
         title: 'Marketing Specialist',
+        titles: ["Marketing Specialist", "Digital Marketing Manager", "SEO Specialist", "Content Marketer", "Social Media Manager", "Growth Hacker"],
         summaries: [
             "Creative Marketing Specialist with a focus on digital growth and brand awareness. Experienced in social media management, SEO, and content strategy. Proven ability to drive traffic and conversions.",
             "Results-oriented Marketer with expertise in campaign management and analytics. Skilled in crafting compelling messaging and optimizing ad spend for maximum ROI."
@@ -66,9 +70,27 @@ const JOB_PROFILES = {
             "Analyzed campaign performance metrics to refine strategies and improve ROI."
         ]
     },
+    'food-service': {
+        title: 'Food Service Professional',
+        titles: ["Barista", "Crew Member", "Team Member", "Shift Supervisor", "Server", "Cashier", "Restaurant Manager", "Kitchen Staff"],
+        summaries: [
+            "Energetic and reliable Food Service Professional with experience in fast-paced environments. Dedicated to providing exceptional customer service and maintaining high standards of cleanliness and efficiency.",
+            "Motivated Team Member with a strong work ethic and ability to work well under pressure. Skilled in cash handling, food preparation, and ensuring customer satisfaction.",
+            "Experienced Barista passionate about coffee and creating welcoming experiences for customers. Proficient in espresso preparation and maintaining a clean workspace."
+        ],
+        skills: ["Customer Service", "Food Safety", "Cash Handling", "Teamwork", "POS Systems", "Time Management", "Inventory Management", "Communication"],
+        bullets: [
+            "Provided excellent customer service, ensuring a positive dining experience for all guests.",
+            "Maintained a clean and organized work area, adhering to all health and safety regulations.",
+            "Collaborated with team members to ensure efficient operations during peak hours.",
+            "Handled cash and credit card transactions accurately and efficiently.",
+            "Prepared food and beverages according to company standards and recipes."
+        ]
+    },
     // Default fallback
     'other': {
         title: 'Professional',
+        titles: ["Professional", "Consultant", "Freelancer", "Specialist", "Coordinator", "Assistant", "Manager"],
         summaries: [
             "Motivated professional with [X] years of experience in [Industry]. Proven track record of [Key Achievement]. Skilled in [Skill 1] and [Skill 2].",
             "Dedicated and results-oriented individual seeking to leverage [Skillset] to contribute to [Company Goals]."
@@ -113,7 +135,9 @@ const initialState = {
 };
 
 // Load state from localStorage or use initial
-let state = JSON.parse(localStorage.getItem('resumeState')) || initialState;
+// Load state from localStorage or use initial
+// let state = JSON.parse(localStorage.getItem('resumeState')) || initialState;
+let state = JSON.parse(JSON.stringify(initialState)); // Always start fresh
 
 // ==========================================
 // 3. CORE FUNCTIONS
@@ -126,6 +150,22 @@ document.addEventListener('DOMContentLoaded', () => {
 function initApp() {
     // Apply theme
     document.documentElement.setAttribute('data-theme', state.theme);
+
+    // Set theme icon based on current theme
+    const themeIcon = document.querySelector('.theme-icon');
+    if (themeIcon) {
+        switch (state.theme) {
+            case 'dark':
+                themeIcon.textContent = '🌙';
+                break;
+            case 'light':
+                themeIcon.textContent = '☀️';
+                break;
+            case 'light-pink':
+                themeIcon.textContent = '🌸';
+                break;
+        }
+    }
 
     // Restore form data
     restoreFormData();
@@ -154,6 +194,38 @@ function showAutoSaveIndicator() {
     setTimeout(() => {
         indicator.style.opacity = '0.5';
     }, 1000);
+}
+
+// ==========================================
+// THEME TOGGLE
+// ==========================================
+
+function toggleTheme() {
+    const themes = ['dark', 'light', 'light-pink'];
+    const currentIndex = themes.indexOf(state.theme);
+    const nextIndex = (currentIndex + 1) % themes.length;
+    state.theme = themes[nextIndex];
+
+    document.documentElement.setAttribute('data-theme', state.theme);
+
+    // Update theme icon
+    const themeIcon = document.querySelector('.theme-icon');
+    if (themeIcon) {
+        switch (state.theme) {
+            case 'dark':
+                themeIcon.textContent = '🌙';
+                break;
+            case 'light':
+                themeIcon.textContent = '☀️';
+                break;
+            case 'light-pink':
+                themeIcon.textContent = '🌸';
+                break;
+        }
+    }
+
+    saveState();
+    showToast(`Switched to ${state.theme.replace('-', ' ')} theme`, 'success');
 }
 
 // ==========================================
@@ -198,12 +270,28 @@ function goToSection(sectionId) {
         const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
         if (navItem) navItem.classList.add('active');
 
+        // Update navigation button visibility
+        const sections = ['job-profile', 'personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'download'];
+        const currentIndex = sections.indexOf(sectionId);
+        const prevBtn = document.getElementById('btn-prev');
+        const nextBtn = document.getElementById('btn-next');
+
+        // Hide Previous on first section
+        if (prevBtn) {
+            prevBtn.style.visibility = currentIndex === 0 ? 'hidden' : 'visible';
+        }
+
+        // Hide Next on last section (download)
+        if (nextBtn) {
+            nextBtn.style.display = currentIndex === sections.length - 1 ? 'none' : 'flex';
+        }
+
         saveState();
     }
 }
 
 function nextSection() {
-    const sections = ['job-profile', 'personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications'];
+    const sections = ['job-profile', 'personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'download'];
     const currentIndex = sections.indexOf(state.currentSection);
     if (currentIndex < sections.length - 1) {
         goToSection(sections[currentIndex + 1]);
@@ -211,7 +299,7 @@ function nextSection() {
 }
 
 function prevSection() {
-    const sections = ['job-profile', 'personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications'];
+    const sections = ['job-profile', 'personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'download'];
     const currentIndex = sections.indexOf(state.currentSection);
     if (currentIndex > 0) {
         goToSection(sections[currentIndex - 1]);
@@ -253,6 +341,18 @@ function selectJobProfile(profileKey) {
     skillsContainer.innerHTML = profile.skills.map(skill => `
         <button class="skill-chip" onclick="addSkill('${skill}', this)">+ ${skill}</button>
     `).join('');
+
+    // Populate Job Title Suggestions (Datalist)
+    const datalist = document.getElementById('job-title-suggestions');
+    if (datalist) {
+        datalist.innerHTML = '';
+        const titles = profile.titles || [];
+        titles.forEach(title => {
+            const option = document.createElement('option');
+            option.value = title;
+            datalist.appendChild(option);
+        });
+    }
 
     document.getElementById('selected-profile-name').textContent = profile.title;
 
@@ -297,7 +397,7 @@ function createEntryHTML(type, id, data = {}) {
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Job Title</label>
-                        <input type="text" class="exp-title" value="${data.title || ''}" oninput="updateEntry('experience', '${id}')">
+                        <input type="text" class="exp-title" value="${data.title || ''}" list="job-title-suggestions" oninput="updateEntry('experience', '${id}')">
                     </div>
                     <div class="form-group">
                         <label>Company</label>
@@ -305,11 +405,20 @@ function createEntryHTML(type, id, data = {}) {
                     </div>
                     <div class="form-group">
                         <label>Start Date</label>
-                        <input type="text" class="exp-start" placeholder="MM/YYYY" value="${data.start || ''}" oninput="updateEntry('experience', '${id}')">
+                        <div class="date-input-group">
+                            <input type="text" class="exp-start" placeholder="MM/YYYY" value="${data.start || ''}" maxlength="7" oninput="handleDateInput(event); updateEntry('experience', '${id}')">
+                            <button class="btn-calendar" onclick="this.nextElementSibling.showPicker()">📅</button>
+                            <input type="month" class="date-picker-hidden" onchange="syncDateFromPicker(this, '${id}', 'start', 'experience')">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>End Date</label>
-                        <input type="text" class="exp-end" placeholder="Present" value="${data.end || ''}" oninput="updateEntry('experience', '${id}')">
+                        <div class="date-input-group">
+                            <input type="text" class="exp-end" placeholder="Present" value="${data.end || ''}" maxlength="7" oninput="handleDateInput(event); updateEntry('experience', '${id}')">
+                            <button class="btn-present" onclick="setPresent(this, '${id}')">Present</button>
+                            <button class="btn-calendar" onclick="this.nextElementSibling.showPicker()">📅</button>
+                            <input type="month" class="date-picker-hidden" onchange="syncDateFromPicker(this, '${id}', 'end', 'experience')">
+                        </div>
                     </div>
                     <div class="form-group full-width">
                         <label>Description</label>
@@ -344,13 +453,62 @@ function createEntryHTML(type, id, data = {}) {
                 </div>
             </div>
         `;
+    } else if (type === 'project') {
+        return `
+            <div class="entry-card" id="${id}">
+                <div class="entry-header">
+                    <span class="entry-title">${data.name || 'Project'}</span>
+                    <button class="btn-remove" onclick="removeEntry('projects', '${id}')">&times;</button>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Project Name</label>
+                        <input type="text" class="proj-name" value="${data.name || ''}" oninput="updateEntry('projects', '${id}')">
+                    </div>
+                    <div class="form-group">
+                        <label>Technologies Used</label>
+                        <input type="text" class="proj-tech" value="${data.technologies || ''}" placeholder="React, Node.js, MongoDB..." oninput="updateEntry('projects', '${id}')">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Description</label>
+                        <textarea class="proj-desc" rows="3" oninput="updateEntry('projects', '${id}')">${data.description || ''}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Link (optional)</label>
+                        <input type="text" class="proj-link" value="${data.link || ''}" placeholder="https://..." oninput="updateEntry('projects', '${id}')">
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (type === 'certification') {
+        return `
+            <div class="entry-card" id="${id}">
+                <div class="entry-header">
+                    <span class="entry-title">${data.name || 'New Certification'}</span>
+                    <button class="btn-remove" onclick="removeEntry('certifications', '${id}')">×</button>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Certification Name</label>
+                        <input type="text" class="cert-name" value="${data.name || ''}" oninput="updateEntry('certifications', '${id}')">
+                    </div>
+                    <div class="form-group">
+                        <label>Issuing Organization</label>
+                        <input type="text" class="cert-org" value="${data.organization || ''}" oninput="updateEntry('certifications', '${id}')">
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="text" class="cert-date" value="${data.date || ''}" placeholder="MM/YYYY" oninput="updateEntry('certifications', '${id}')">
+                    </div>
+                </div>
+            </div>
+        `;
     }
-    // Add similar blocks for projects/certifications
     return '';
 }
 
 function addExperience(data = null) {
-    const id = 'exp_' + Date.now();
+    const id = (data && data.id) ? data.id : 'exp_' + Date.now();
     const container = document.getElementById('experience-container');
     container.insertAdjacentHTML('beforeend', createEntryHTML('experience', id, data || {}));
 
@@ -361,13 +519,49 @@ function addExperience(data = null) {
 }
 
 function addEducation(data = null) {
-    const id = 'edu_' + Date.now();
+    const id = (data && data.id) ? data.id : 'edu_' + Date.now();
     const container = document.getElementById('education-container');
     container.insertAdjacentHTML('beforeend', createEntryHTML('education', id, data || {}));
 
     if (!data) {
         state.education.push({ id, degree: '', school: '', year: '' });
         saveState();
+    }
+}
+
+function addProject(data = null) {
+    const id = (data && data.id) ? data.id : 'proj_' + Date.now();
+    const container = document.getElementById('projects-container');
+    container.insertAdjacentHTML('beforeend', createEntryHTML('project', id, data || {}));
+
+    if (!data) {
+        state.projects.push({ id, name: '', technologies: '', description: '', link: '' });
+        saveState();
+    }
+    renderPreview();
+}
+
+function addCertification(data = null) {
+    const id = (data && data.id) ? data.id : 'cert_' + Date.now();
+    const container = document.getElementById('certifications-container');
+    container.insertAdjacentHTML('beforeend', createEntryHTML('certification', id, data || {}));
+
+    if (!data) {
+        state.certifications.push({ id, name: '', organization: '', date: '' });
+        saveState();
+    }
+    renderPreview();
+}
+
+function syncDateFromPickerCert(pickerEl, id) {
+    const value = pickerEl.value; // Format: YYYY-MM
+    if (value) {
+        const [year, month] = value.split('-');
+        const formatted = `${month}/${year}`;
+        const cardEl = document.getElementById(id);
+        const dateInput = cardEl.querySelector('.cert-date');
+        dateInput.value = formatted;
+        updateEntry('certifications', id);
     }
 }
 
@@ -394,6 +588,17 @@ function updateEntry(type, id) {
         item.school = el.querySelector('.edu-school').value;
         item.year = el.querySelector('.edu-year').value;
         el.querySelector('.entry-title').textContent = item.degree || 'Degree';
+    } else if (type === 'projects') {
+        item.name = el.querySelector('.proj-name').value;
+        item.technologies = el.querySelector('.proj-tech').value;
+        item.description = el.querySelector('.proj-desc').value;
+        item.link = el.querySelector('.proj-link').value;
+        el.querySelector('.entry-title').textContent = item.name || 'Project';
+    } else if (type === 'certifications') {
+        item.name = el.querySelector('.cert-name').value;
+        item.organization = el.querySelector('.cert-org').value;
+        item.date = el.querySelector('.cert-date').value;
+        el.querySelector('.entry-title').textContent = item.name || 'Certification';
     }
 
     saveState();
@@ -711,6 +916,213 @@ function renderPreview() {
             </div>
         `;
     }
+    // --- ELEGANT TEMPLATE ---
+    else if (template === 'elegant') {
+        html = `
+            <div style="display: flex; height: 100%; font-family: 'Georgia', serif;">
+                <div style="width: 35%; background: linear-gradient(180deg, #1a365d 0%, #2c5282 100%); color: white; padding: 2rem;">
+                    ${personal.photo ? `<img src="${personal.photo}" style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">` : ''}
+                    <h1 style="font-size: 1.6rem; text-align: center; margin-bottom: 5px; font-weight: 400; letter-spacing: 1px;">${escapeHtml(personal.fullName)}</h1>
+                    <p style="text-align: center; font-size: 0.95rem; opacity: 0.9; margin-bottom: 25px; font-style: italic;">${escapeHtml(personal.jobTitle)}</p>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px; margin-bottom: 12px;">Contact</div>
+                        ${personal.email ? `<div style="font-size: 0.85rem; margin-bottom: 8px; word-break: break-all;">📧 ${escapeHtml(personal.email)}</div>` : ''}
+                        ${personal.phone ? `<div style="font-size: 0.85rem; margin-bottom: 8px;">📱 ${escapeHtml(personal.phone)}</div>` : ''}
+                        ${personal.location ? `<div style="font-size: 0.85rem; margin-bottom: 8px;">📍 ${escapeHtml(personal.location)}</div>` : ''}
+                        ${personal.linkedin ? `<div style="font-size: 0.85rem; word-break: break-all;">🔗 ${escapeHtml(personal.linkedin)}</div>` : ''}
+                    </div>
+                    
+                    ${skills ? `
+                    <div style="margin-bottom: 25px;">
+                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px; margin-bottom: 12px;">Expertise</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            ${skills.split(',').map(s => `<span style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 3px; font-size: 0.8rem;">${escapeHtml(s.trim())}</span>`).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${languages ? `
+                    <div>
+                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px; margin-bottom: 12px;">Languages</div>
+                        ${languages.split(',').map(l => `<div style="font-size: 0.85rem; margin-bottom: 5px;">• ${escapeHtml(l.trim())}</div>`).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+                <div style="width: 65%; padding: 2.5rem; background: #fafafa;">
+                    ${summary ? `
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="font-size: 1.1rem; color: #1a365d; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #1a365d; display: inline-block; padding-bottom: 5px; margin-bottom: 12px;">Profile</h2>
+                        <p style="color: #4a5568; line-height: 1.7; font-size: 0.95rem;">${escapeHtml(summary)}</p>
+                    </div>
+                    ` : ''}
+                    
+                    ${experience.length > 0 ? `
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="font-size: 1.1rem; color: #1a365d; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #1a365d; display: inline-block; padding-bottom: 5px; margin-bottom: 15px;">Experience</h2>
+                        ${experience.map(exp => `
+                            <div style="margin-bottom: 18px;">
+                                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                    <h3 style="font-size: 1rem; color: #2d3748; margin: 0; font-weight: 600;">${escapeHtml(exp.title)}</h3>
+                                    <span style="font-size: 0.85rem; color: #718096; font-style: italic;">${escapeHtml(exp.start)} - ${escapeHtml(exp.end)}</span>
+                                </div>
+                                <div style="color: #2c5282; font-weight: 500; margin-bottom: 6px; font-size: 0.95rem;">${escapeHtml(exp.company)}</div>
+                                <div style="color: #4a5568; font-size: 0.9rem; line-height: 1.6;">${formatBullets(exp.description)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                    
+                    ${education.length > 0 ? `
+                    <div>
+                        <h2 style="font-size: 1.1rem; color: #1a365d; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #1a365d; display: inline-block; padding-bottom: 5px; margin-bottom: 15px;">Education</h2>
+                        ${education.map(edu => `
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-weight: 600; color: #2d3748;">${escapeHtml(edu.degree)}</span>
+                                    <span style="color: #718096; font-size: 0.9rem;">${escapeHtml(edu.year)}</span>
+                                </div>
+                                <div style="color: #4a5568; font-size: 0.9rem;">${escapeHtml(edu.school)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+    // --- TECH TEMPLATE ---
+    else if (template === 'tech') {
+        html = `
+            <div style="background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%); color: #e2e8f0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; height: 100%;">
+                <div style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); padding: 1.5rem 2rem;">
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        ${personal.photo ? `<img src="${personal.photo}" style="width: 80px; height: 80px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3);">` : ''}
+                        <div>
+                            <h1 style="font-size: 1.8rem; margin: 0; font-weight: 700;">${escapeHtml(personal.fullName)}</h1>
+                            <p style="margin: 5px 0 0; opacity: 0.9; font-size: 1.1rem;">${escapeHtml(personal.jobTitle)}</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; font-size: 0.85rem;">
+                        ${personal.email ? `<span>📧 ${escapeHtml(personal.email)}</span>` : ''}
+                        ${personal.phone ? `<span>📱 ${escapeHtml(personal.phone)}</span>` : ''}
+                        ${personal.location ? `<span>📍 ${escapeHtml(personal.location)}</span>` : ''}
+                        ${personal.github ? `<span>💻 ${escapeHtml(personal.github)}</span>` : ''}
+                    </div>
+                </div>
+                
+                <div style="padding: 1.5rem 2rem;">
+                    ${summary ? `
+                    <div style="margin-bottom: 20px;">
+                        <h2 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: #667eea; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 2px; background: #667eea;"></span> About</h2>
+                        <p style="color: #a0aec0; line-height: 1.6; font-size: 0.9rem;">${escapeHtml(summary)}</p>
+                    </div>
+                    ` : ''}
+                    
+                    ${skills ? `
+                    <div style="margin-bottom: 20px;">
+                        <h2 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: #667eea; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 2px; background: #667eea;"></span> Tech Stack</h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            ${skills.split(',').map(s => `<span style="background: rgba(102, 126, 234, 0.2); border: 1px solid rgba(102, 126, 234, 0.4); padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; color: #a0aec0;">${escapeHtml(s.trim())}</span>`).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${experience.length > 0 ? `
+                    <div style="margin-bottom: 20px;">
+                        <h2 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: #667eea; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 2px; background: #667eea;"></span> Experience</h2>
+                        ${experience.map(exp => `
+                            <div style="margin-bottom: 15px; padding-left: 15px; border-left: 2px solid #667eea;">
+                                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                    <h3 style="font-size: 1rem; color: #e2e8f0; margin: 0;">${escapeHtml(exp.title)}</h3>
+                                    <span style="font-size: 0.8rem; color: #718096; background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">${escapeHtml(exp.start)} - ${escapeHtml(exp.end)}</span>
+                                </div>
+                                <div style="color: #667eea; font-size: 0.9rem; margin-bottom: 5px;">${escapeHtml(exp.company)}</div>
+                                <div style="color: #a0aec0; font-size: 0.85rem; line-height: 1.5;">${formatBullets(exp.description)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                    
+                    ${education.length > 0 ? `
+                    <div>
+                        <h2 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: #667eea; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span style="width: 20px; height: 2px; background: #667eea;"></span> Education</h2>
+                        ${education.map(edu => `
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <div>
+                                    <span style="color: #e2e8f0; font-weight: 500;">${escapeHtml(edu.degree)}</span>
+                                    <span style="color: #718096;"> · ${escapeHtml(edu.school)}</span>
+                                </div>
+                                <span style="color: #718096; font-size: 0.85rem;">${escapeHtml(edu.year)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+    // --- CLASSIC TEMPLATE ---
+    else if (template === 'classic') {
+        html = `
+            <div style="font-family: 'Times New Roman', Times, serif; padding: 2.5rem; color: #333; background: #fff;">
+                <div style="text-align: center; border-bottom: 3px double #333; padding-bottom: 20px; margin-bottom: 20px;">
+                    <h1 style="font-size: 2rem; margin: 0; text-transform: uppercase; letter-spacing: 3px; font-weight: 400;">${escapeHtml(personal.fullName)}</h1>
+                    <p style="font-size: 1.1rem; font-style: italic; color: #555; margin-top: 8px;">${escapeHtml(personal.jobTitle)}</p>
+                    <div style="margin-top: 12px; font-size: 0.9rem; color: #666;">
+                        ${personal.email ? `${escapeHtml(personal.email)}` : ''}
+                        ${personal.phone ? ` · ${escapeHtml(personal.phone)}` : ''}
+                        ${personal.location ? ` · ${escapeHtml(personal.location)}` : ''}
+                    </div>
+                </div>
+                
+                ${summary ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #999; padding-bottom: 5px; margin-bottom: 10px; font-weight: 400;">Professional Summary</h2>
+                    <p style="text-align: justify; line-height: 1.7; color: #444;">${escapeHtml(summary)}</p>
+                </div>
+                ` : ''}
+                
+                ${experience.length > 0 ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #999; padding-bottom: 5px; margin-bottom: 15px; font-weight: 400;">Professional Experience</h2>
+                    ${experience.map(exp => `
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <strong style="font-size: 1rem;">${escapeHtml(exp.title)}</strong>
+                                <span style="font-style: italic; color: #666;">${escapeHtml(exp.start)} – ${escapeHtml(exp.end)}</span>
+                            </div>
+                            <div style="font-style: italic; color: #555; margin-bottom: 5px;">${escapeHtml(exp.company)}</div>
+                            <div style="line-height: 1.6; color: #444;">${formatBullets(exp.description)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+                
+                ${education.length > 0 ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #999; padding-bottom: 5px; margin-bottom: 15px; font-weight: 400;">Education</h2>
+                    ${education.map(edu => `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <div>
+                                <strong>${escapeHtml(edu.degree)}</strong>
+                                <span style="color: #555;"> – ${escapeHtml(edu.school)}</span>
+                            </div>
+                            <span style="font-style: italic; color: #666;">${escapeHtml(edu.year)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+                
+                ${skills ? `
+                <div>
+                    <h2 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #999; padding-bottom: 5px; margin-bottom: 10px; font-weight: 400;">Skills & Expertise</h2>
+                    <p style="color: #444; line-height: 1.6;">${escapeHtml(skills)}</p>
+                </div>
+                ` : ''}
+            </div>
+        `;
+    }
 
     container.innerHTML = html;
 }
@@ -816,7 +1228,7 @@ function removePhoto() {
 function openTemplateGallery() {
     const modal = document.getElementById('template-modal');
     const grid = document.getElementById('template-gallery-grid');
-    const templates = ['modern', 'minimal', 'professional', 'creative', 'ats'];
+    const templates = ['modern', 'minimal', 'professional', 'creative', 'ats', 'executive', 'elegant', 'tech', 'classic'];
 
     grid.innerHTML = templates.map(t => `
         <div class="job-card ${state.template === t ? 'selected' : ''}" onclick="selectTemplate('${t}')">
@@ -1278,4 +1690,47 @@ function stopResize() {
     document.removeEventListener('mouseup', stopResize);
 
     currentDivider = null;
+}
+
+// ==========================================
+// 13. DATE HANDLING
+// ==========================================
+
+function handleDateInput(e) {
+    let input = e.target;
+    let value = input.value.replace(/\D/g, ''); // Remove non-digits
+
+    if (value.length > 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2, 6);
+    }
+
+    // Prevent updating if user is deleting the slash
+    if (e.inputType === 'deleteContentBackward' && input.value.length === 3) {
+        value = value.substring(0, 2);
+    }
+
+    input.value = value;
+}
+
+function syncDateFromPicker(picker, id, field, type) {
+    if (!picker.value) return;
+    const [year, month] = picker.value.split('-');
+    const formatted = `${month}/${year}`;
+
+    // Find the text input sibling
+    const container = picker.parentElement;
+    const textInput = container.querySelector('input[type="text"]');
+    textInput.value = formatted;
+
+    // Trigger update
+    if (type === 'experience') {
+        updateEntry('experience', id);
+    }
+}
+
+function setPresent(button, id) {
+    const container = button.parentElement;
+    const textInput = container.querySelector('input[type="text"]');
+    textInput.value = 'Present';
+    updateEntry('experience', id);
 }
