@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResumeAI Pro | Build Your Dream Resume with AI</title>
+    <meta name="description"
+        content="Create stunning professional resumes with AI-powered suggestions. Free resume builder with ATS optimization.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+    <!-- Background Effects -->
+    <div class="bg-effects">
+        <div class="gradient-sphere sphere-1"></div>
+        <div class="gradient-sphere sphere-2"></div>
+        <div class="gradient-sphere sphere-3"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">✨</span>
+                <span class="logo-text">Resume<span class="logo-ai">AI</span> Pro</span>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="auto-save-indicator" id="save-indicator">
+                <span class="save-dot"></span>
+                <span>Auto-saved</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+            <button class="btn-secondary" onclick="openTemplateGallery()">
+                <span>🎨</span> Templates
+            </button>
+            <button class="btn-primary" onclick="downloadResume()">
+                <span>⬇️</span> Download PDF
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Application -->
+    <main class="app-main" id="app-main">
+        <!-- Left Sidebar - Progress & Scores -->
+        <aside class="sidebar" id="sidebar-panel">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">📊 Resume Score</h3>
+                <div class="score-card">
+                    <div class="score-circle" id="resume-score">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="score-bg" cx="50" cy="50" r="45" />
+                            <circle class="score-progress" cx="50" cy="50" r="45" id="score-circle" />
+                        </svg>
+                        <div class="score-value">
+                            <span id="score-number">0</span>
+                            <span class="score-label">%</span>
+                        </div>
+                    </div>
+                    <p class="score-message" id="score-message">Start filling your resume!</p>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">🎯 ATS Score</h3>
+                <div class="ats-meter">
+                    <div class="ats-bar">
+                        <div class="ats-fill" id="ats-fill"></div>
+                    </div>
+                    <div class="ats-info">
+                        <span id="ats-score">0%</span>
+                        <span class="ats-label">ATS Friendly</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">📝 Sections</h3>
+                <nav class="section-nav">
+                    <button class="nav-item active" data-section="job-profile" onclick="goToSection('job-profile')">
+                        <span class="nav-icon">💼</span>
+                        <span class="nav-label">Job Profile</span>
+                        <span class="nav-status" id="status-job-profile"></span>
+                    </button>
+                    <button class="nav-item" data-section="personal" onclick="goToSection('personal')">
+                        <span class="nav-icon">👤</span>
+                        <span class="nav-label">Personal Info</span>
+                        <span class="nav-status" id="status-personal"></span>
+                    </button>
+                    <button class="nav-item" data-section="summary" onclick="goToSection('summary')">
+                        <span class="nav-icon">📄</span>
+                        <span class="nav-label">Summary</span>
+                        <span class="nav-status" id="status-summary"></span>
+                    </button>
+                    <button class="nav-item" data-section="experience" onclick="goToSection('experience')">
+                        <span class="nav-icon">💼</span>
+                        <span class="nav-label">Experience</span>
+                        <span class="nav-status" id="status-experience"></span>
+                    </button>
+                    <button class="nav-item" data-section="education" onclick="goToSection('education')">
+                        <span class="nav-icon">🎓</span>
+                        <span class="nav-label">Education</span>
+                        <span class="nav-status" id="status-education"></span>
+                    </button>
+                    <button class="nav-item" data-section="skills" onclick="goToSection('skills')">
+                        <span class="nav-icon">⚡</span>
+                        <span class="nav-label">Skills</span>
+                        <span class="nav-status" id="status-skills"></span>
+                    </button>
+                    <button class="nav-item" data-section="projects" onclick="goToSection('projects')">
+                        <span class="nav-icon">🚀</span>
+                        <span class="nav-label">Projects</span>
+                        <span class="nav-status" id="status-projects"></span>
+                    </button>
+                    <button class="nav-item" data-section="certifications" onclick="goToSection('certifications')">
+                        <span class="nav-icon">🏆</span>
+                        <span class="nav-label">Certifications</span>
+                        <span class="nav-status" id="status-certifications"></span>
+                    </button>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Resize Divider: Sidebar ↔ Form -->
+        <div class="resize-divider" id="divider-1" onmousedown="startResize(event, 'divider-1')"></div>
+
+        <!-- Center - Form Section -->
+        <section class="form-panel" id="form-panel">
+            <!-- Section: Job Profile (AI Trigger) -->
+            <div class="form-section active" id="section-job-profile">
+                <div class="section-header">
+                    <div class="section-icon">💼</div>
+                    <div class="section-info">
+                        <h2>Select Your Target Role</h2>
+                        <p>We'll provide AI-powered suggestions tailored to your job profile</p>
+                    </div>
+                </div>
+                <div class="job-profile-grid">
+                    <div class="job-card" data-profile="software-engineer"
+                        onclick="selectJobProfile('software-engineer')">
+                        <div class="job-icon">👨‍💻</div>
+                        <h3>Software Engineer</h3>
+                        <p>Developer, Programmer, SDE</p>
+                    </div>
+                    <div class="job-card" data-profile="data-analyst" onclick="selectJobProfile('data-analyst')">
+                        <div class="job-icon">📊</div>
+                        <h3>Data Analyst</h3>
+                        <p>Analytics, BI, Data Science</p>
+                    </div>
+                    <div class="job-card" data-profile="product-manager" onclick="selectJobProfile('product-manager')">
+                        <div class="job-icon">📱</div>
+                        <h3>Product Manager</h3>
+                        <p>PM, Product Owner, Strategy</p>
+                    </div>
+                    <div class="job-card" data-profile="marketing" onclick="selectJobProfile('marketing')">
+                        <div class="job-icon">📣</div>
+                        <h3>Marketing</h3>
+                        <p>Digital Marketing, Growth, SEO</p>
+                    </div>
+                    <div class="job-card" data-profile="sales" onclick="selectJobProfile('sales')">
+                        <div class="job-icon">🤝</div>
+                        <h3>Sales</h3>
+                        <p>Business Development, Account</p>
+                    </div>
+                    <div class="job-card" data-profile="customer-support"
+                        onclick="selectJobProfile('customer-support')">
+                        <div class="job-icon">🎧</div>
+                        <h3>Customer Support</h3>
+                        <p>Support, Service, Success</p>
+                    </div>
+                    <div class="job-card" data-profile="hr" onclick="selectJobProfile('hr')">
+                        <div class="job-icon">👥</div>
+                        <h3>Human Resources</h3>
+                        <p>HR, Recruiting, People Ops</p>
+                    </div>
+                    <div class="job-card" data-profile="finance" onclick="selectJobProfile('finance')">
+                        <div class="job-icon">💰</div>
+                        <h3>Finance</h3>
+                        <p>Accounting, Financial Analyst</p>
+                    </div>
+                    <div class="job-card" data-profile="designer" onclick="selectJobProfile('designer')">
+                        <div class="job-icon">🎨</div>
+                        <h3>Designer</h3>
+                        <p>UI/UX, Graphic, Product Design</p>
+                    </div>
+                    <div class="job-card" data-profile="operations" onclick="selectJobProfile('operations')">
+                        <div class="job-icon">⚙️</div>
+                        <h3>Operations</h3>
+                        <p>Ops Manager, Process, Logistics</p>
+                    </div>
+                    <div class="job-card" data-profile="content-writer" onclick="selectJobProfile('content-writer')">
+                        <div class="job-icon">✍️</div>
+                        <h3>Content Writer</h3>
+                        <p>Copywriting, Editor, Blogger</p>
+                    </div>
+                    <div class="job-card" data-profile="other" onclick="selectJobProfile('other')">
+                        <div class="job-icon">📋</div>
+                        <h3>Other</h3>
+                        <p>General Resume</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Personal Info -->
+            <div class="form-section" id="section-personal">
+                <div class="section-header">
+                    <div class="section-icon">👤</div>
+                    <div class="section-info">
+                        <h2>Personal Information</h2>
+                        <p>Your basic details and contact information</p>
+                    </div>
+                </div>
+
+                <div class="photo-upload-area">
+                    <div class="photo-preview" id="photo-preview">
+                        <span class="photo-placeholder">📷</span>
+                        <img id="photo-img" src="" alt="Profile" style="display: none;">
+                    </div>
+                    <div class="photo-actions">
+                        <label class="btn-upload">
+                            <input type="file" id="photo-input" accept="image/*" onchange="handlePhotoUpload(event)"
+                                hidden>
+                            <span>📤</span> Upload Photo
+                        </label>
+                        <button class="btn-remove-photo" onclick="removePhoto()" style="display: none;"
+                            id="remove-photo-btn">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Name <span class="required">*</span></label>
+                        <input type="text" id="fullName" placeholder="John Doe" oninput="updateResume()">
+                    </div>
+                    <div class="form-group">
+                        <label>Job Title <span class="required">*</span></label>
+                        <div class="input-with-ai">
+                            <input type="text" id="jobTitle" placeholder="Software Engineer" oninput="updateResume()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" id="email" placeholder="john@example.com" oninput="updateResume()">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone <span class="required">*</span></label>
+                        <input type="tel" id="phone" placeholder="+91 9876543210" oninput="updateResume()">
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="location" placeholder="New Delhi, India" oninput="updateResume()">
+                    </div>
+                    <div class="form-group">
+                        <label>LinkedIn</label>
+                        <input type="url" id="linkedin" placeholder="linkedin.com/in/johndoe" oninput="updateResume()">
+                    </div>
+                    <div class="form-group">
+                        <label>Portfolio/Website</label>
+                        <input type="url" id="portfolio" placeholder="johndoe.com" oninput="updateResume()">
+                    </div>
+                    <div class="form-group">
+                        <label>GitHub</label>
+                        <input type="url" id="github" placeholder="github.com/johndoe" oninput="updateResume()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Professional Summary -->
+            <div class="form-section" id="section-summary">
+                <div class="section-header">
+                    <div class="section-icon">📄</div>
+                    <div class="section-info">
+                        <h2>Professional Summary</h2>
+                        <p>A compelling overview of your professional background</p>
+                    </div>
+                </div>
+
+                <div class="ai-suggestions-panel" id="summary-suggestions">
+                    <div class="ai-header">
+                        <span class="ai-badge">✨ AI Suggestions</span>
+                        <span class="ai-subtitle">Based on your <strong id="selected-profile-name">job
+                                profile</strong></span>
+                    </div>
+                    <div class="suggestion-cards" id="summary-suggestion-cards">
+                        <!-- AI suggestions will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Your Summary</label>
+                    <textarea id="summary" rows="5" placeholder="Write a compelling 2-3 sentence summary..."
+                        oninput="updateResume()"></textarea>
+                    <div class="char-count"><span id="summary-chars">0</span>/500 characters</div>
+                </div>
+            </div>
+
+            <!-- Section: Work Experience -->
+            <div class="form-section" id="section-experience">
+                <div class="section-header">
+                    <div class="section-icon">💼</div>
+                    <div class="section-info">
+                        <h2>Work Experience</h2>
+                        <p>Your professional work history (most recent first)</p>
+                    </div>
+                </div>
+
+                <div id="experience-container" class="entries-container">
+                    <!-- Experience entries will be added here -->
+                </div>
+
+                <button class="btn-add-entry" onclick="addExperience()">
+                    <span>+</span> Add Experience
+                </button>
+            </div>
+
+            <!-- Section: Education -->
+            <div class="form-section" id="section-education">
+                <div class="section-header">
+                    <div class="section-icon">🎓</div>
+                    <div class="section-info">
+                        <h2>Education</h2>
+                        <p>Your academic background and qualifications</p>
+                    </div>
+                </div>
+
+                <div id="education-container" class="entries-container">
+                    <!-- Education entries will be added here -->
+                </div>
+
+                <button class="btn-add-entry" onclick="addEducation()">
+                    <span>+</span> Add Education
+                </button>
+            </div>
+
+            <!-- Section: Skills -->
+            <div class="form-section" id="section-skills">
+                <div class="section-header">
+                    <div class="section-icon">⚡</div>
+                    <div class="section-info">
+                        <h2>Skills</h2>
+                        <p>Technical and soft skills relevant to your role</p>
+                    </div>
+                </div>
+
+                <div class="ai-suggestions-panel" id="skills-suggestions">
+                    <div class="ai-header">
+                        <span class="ai-badge">✨ Suggested Skills</span>
+                        <span class="ai-subtitle">Click to add instantly</span>
+                    </div>
+                    <div class="skill-chips" id="suggested-skills">
+                        <!-- AI skill suggestions will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Your Skills (comma separated)</label>
+                    <textarea id="skills" rows="3" placeholder="JavaScript, React, Node.js, Git, Problem Solving..."
+                        oninput="updateResume()"></textarea>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Languages</label>
+                    <textarea id="languages" rows="2" placeholder="English (Fluent), Hindi (Native)..."
+                        oninput="updateResume()"></textarea>
+                </div>
+            </div>
+
+            <!-- Section: Projects -->
+            <div class="form-section" id="section-projects">
+                <div class="section-header">
+                    <div class="section-icon">🚀</div>
+                    <div class="section-info">
+                        <h2>Projects</h2>
+                        <p>Showcase your best work and side projects</p>
+                    </div>
+                </div>
+
+                <div id="projects-container" class="entries-container">
+                    <!-- Project entries will be added here -->
+                </div>
+
+                <button class="btn-add-entry" onclick="addProject()">
+                    <span>+</span> Add Project
+                </button>
+            </div>
+
+            <!-- Section: Certifications -->
+            <div class="form-section" id="section-certifications">
+                <div class="section-header">
+                    <div class="section-icon">🏆</div>
+                    <div class="section-info">
+                        <h2>Certifications & Awards</h2>
+                        <p>Professional certifications and achievements</p>
+                    </div>
+                </div>
+
+                <div id="certifications-container" class="entries-container">
+                    <!-- Certification entries will be added here -->
+                </div>
+
+                <button class="btn-add-entry" onclick="addCertification()">
+                    <span>+</span> Add Certification
+                </button>
+            </div>
+
+            <!-- Section Navigation -->
+            <div class="section-navigation">
+                <button class="btn-nav prev" onclick="prevSection()" id="btn-prev">
+                    <span>←</span> Previous
+                </button>
+                <button class="btn-nav next" onclick="nextSection()" id="btn-next">
+                    Next <span>→</span>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- Resize Divider: Form ↔ Preview -->
+        <div class="resize-divider" id="divider-2" onmousedown="startResize(event, 'divider-2')"></div>
+
+
+        <!-- Right - Live Preview Panel -->
+        <section class="preview-panel" id="preview-panel">
+            <div class="preview-toolbar">
+                <div class="preview-tabs">
+                    <button class="preview-tab active" onclick="setPreviewMode('desktop')">💻</button>
+                    <button class="preview-tab" onclick="setPreviewMode('mobile')">📱</button>
+                </div>
+                <select id="template-selector" onchange="changeTemplate()">
+                    <option value="modern">Modern</option>
+                    <option value="minimal">Minimal</option>
+                    <option value="professional">Professional</option>
+                    <option value="creative">Creative</option>
+                    <option value="ats">ATS-Friendly</option>
+                    <option value="executive">Executive</option>
+                </select>
+            </div>
+
+            <div class="preview-container" id="preview-container">
+                <div class="resume-paper" id="resume-preview">
+                    <!-- Resume will be rendered here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Template Gallery Modal -->
+    <div class="modal-overlay" id="template-modal">
+        <div class="modal-content template-modal">
+            <div class="modal-header">
+                <h2>🎨 Choose Your Template</h2>
+                <button class="modal-close" onclick="closeTemplateGallery()">×</button>
+            </div>
+            <div class="template-gallery-grid" id="template-gallery-grid">
+                <!-- Template cards will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Question Helper Modal -->
+    <div class="modal-overlay" id="ai-helper-modal">
+        <div class="modal-content ai-helper-modal">
+            <div class="modal-header">
+                <h2>💡 AI Writing Assistant</h2>
+                <button class="modal-close" onclick="closeAIHelper()">×</button>
+            </div>
+            <div class="ai-helper-content">
+                <p class="helper-question" id="helper-question"></p>
+                <div class="helper-variations" id="helper-variations">
+                    <!-- Variations will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Photo Crop Modal -->
+    <div class="modal-overlay" id="crop-modal">
+        <div class="modal-content crop-modal">
+            <div class="modal-header">
+                <h2>✂️ Adjust Photo</h2>
+                <button class="modal-close" onclick="closeCropModal()">×</button>
+            </div>
+            <div class="crop-container">
+                <div class="crop-preview-area">
+                    <div class="crop-image-wrapper" id="crop-wrapper">
+                        <img id="crop-image" src="" alt="Crop Preview">
+                        <div class="crop-circle-overlay"></div>
+                    </div>
+                </div>
+                <div class="crop-controls">
+                    <label>Zoom</label>
+                    <input type="range" id="crop-zoom" min="100" max="300" value="100"
+                        oninput="updateCropZoom(this.value)">
+                    <div class="crop-buttons">
+                        <button class="btn-secondary" onclick="closeCropModal()">Cancel</button>
+                        <button class="btn-primary" onclick="applyCrop()">✓ Apply</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
